@@ -22,12 +22,12 @@ jobs:
         id: get_tag
         run: |
           TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo ::set-output name=tag::$TAG
+          echo "tag=$TAG" >> $GITHUB_ENV
 
       - name: Calculate new version
         id: calc_version
         run: |
-          TAG=${{ steps.get_tag.outputs.tag }}
+          TAG=${{ env.tag }}
           echo "Latest Tag: $TAG"
           VERSION=${TAG#v} # Remove the 'v' prefix if exists
           IFS='.' read -r -a PARTS <<< "$VERSION"
@@ -36,20 +36,20 @@ jobs:
           PATCH=${PARTS[2]}
           PATCH=$((PATCH + 1))
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_ENV
           echo "New Version: $NEW_VERSION"
-          echo ::set-output name=new_version::$NEW_VERSION
 
       - name: Restore dependencies
         run: dotnet restore
 
       - name: Build the project
-        run: dotnet build --configuration Release --no-restore /p:Version=${{ steps.calc_version.outputs.new_version }}
+        run: dotnet build --configuration Release --no-restore /p:Version=${{ env.new_version }}
 
       - name: Run tests
         run: dotnet test --no-restore --verbosity normal
 
       - name: Pack the NuGet package
-        run: dotnet pack --configuration Release --no-build --output ./nupkg /p:PackageVersion=${{ steps.calc_version.outputs.new_version }} /p:PackageReadmeFile=README.md
+        run: dotnet pack --configuration Release --no-build --output ./nupkg /p:PackageVersion=${{ env.new_version }} /p:PackageReadmeFile=README.md
 
       - name: Publish to nuget.org
         env:
@@ -60,7 +60,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          NEW_TAG="v${{ steps.calc_version.outputs.new_version }}"
+          NEW_TAG="v${{ env.new_version }}"
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git tag $NEW_TAG
