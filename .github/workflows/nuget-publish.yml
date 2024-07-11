@@ -28,7 +28,7 @@ jobs:
       #   run: dotnet test --no-restore --verbosity normal
 
       - name: Pack the NuGet package
-        run: dotnet pack --configuration Release --no-build --output ./nupkg
+        run: dotnet pack --configuration Release --no-build --output ./nupkg /p:PackageReadmeFile=README.md
 
       - name: Publish to nuget.org
         env:
