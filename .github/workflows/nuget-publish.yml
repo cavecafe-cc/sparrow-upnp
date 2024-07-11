@@ -20,14 +20,19 @@ jobs:
 
       - name: Get latest tag
         id: get_tag
-        run: echo ::set-output name=tag::$(git describe --tags --abbrev=0)
+        run: |
+          TAG=$(git describe --tags --abbrev=0)
+          if [ -z "$TAG" ]; then
+            TAG="v0.0.0"
+          fi
+          echo ::set-output name=tag::$TAG
 
       - name: Calculate new version
         id: calc_version
         run: |
           TAG=${{ steps.get_tag.outputs.tag }}
           echo "Latest Tag: $TAG"
-          VERSION=${TAG/v/} # Remove the 'v' prefix if exists
+          VERSION=${TAG#v} # Remove the 'v' prefix if exists
           IFS='.' read -r -a PARTS <<< "$VERSION"
           MAJOR=${PARTS[0]}
           MINOR=${PARTS[1]}
@@ -37,20 +42,14 @@ jobs:
           echo "New Version: $NEW_VERSION"
           echo ::set-output name=new_version::$NEW_VERSION
 
-      - name: Update .csproj version
-        run: |
-          VERSION=${{ steps.calc_version.outputs.new_version }}
-          echo "Updating .csproj files with version $VERSION"
-          find . -name "*.csproj" -exec sed -i 's/<Version>.*<\/Version>/<Version>'$VERSION'<\/Version>/g' {} +
-
       - name: Restore dependencies
         run: dotnet restore
 
       - name: Build the project
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build --configuration Release --no-restore /p:Version=${{ steps.calc_version.outputs.new_version }}
 
-      # - name: Run tests
-      #   run: dotnet test --no-restore --verbosity normal
+      - name: Run tests
+        run: dotnet test --no-restore --verbosity normal
 
       - name: Pack the NuGet package
         run: dotnet pack --configuration Release --no-build --output ./nupkg /p:PackageVersion=${{ steps.calc_version.outputs.new_version }} /p:PackageReadmeFile=README.md
