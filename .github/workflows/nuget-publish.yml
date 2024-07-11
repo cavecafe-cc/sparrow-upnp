@@ -16,7 +16,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8' # Adjust the version to your needs
+          dotnet-version: '8'
 
       - name: Get latest tag
         id: get_tag
