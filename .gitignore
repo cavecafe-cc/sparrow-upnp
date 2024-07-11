@@ -1,0 +1,8 @@
+bin/
+obj/
+node_modules/
+*.pem
+*.pfx
+*.b64
+*.b64.json
+*.DotSettings.user
