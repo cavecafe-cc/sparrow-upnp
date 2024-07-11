@@ -6,7 +6,12 @@
         <Nullable>enable</Nullable>
         <RootNamespace>Sparrow.UPnP</RootNamespace>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Version>1.0.1</Version>
+        <Version>$(Version)</Version>
+        <Authors>cavecafe</Authors>
+        <PackageTags>upnp, sparrow, discovery</PackageTags>
+        <PackageProjectUrl>https://github.com/cavecafe-cc/sparrow-upnp</PackageProjectUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <Description>Sparrow.UPnP is a simple UPnP library for .NET Core. It can be used in any .NET Core-based service. The library automatically discovers UPnP devices on the network and provides a simple interface for interacting with them.</Description>
     </PropertyGroup>
 
     <ItemGroup>
