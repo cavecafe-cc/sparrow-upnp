@@ -37,8 +37,12 @@ jobs:
         run: dotnet restore
 
       - name: Build the project
-        echo "new version: ${{ env.new_version }}"
-        run: dotnet build --configuration Release --no-restore /p:Version=${{ env.new_version }}
+        env:
+          new_version: ${{ steps.get_version_tag.outputs.new_version }}
+
+        run: |
+          echo "new version: ${{ env.new_version }}"
+          dotnet build --configuration Release --no-restore /p:Version=${{ env.new_version }}
 
       - name: Run tests
         run: dotnet test --no-restore --verbosity normal
