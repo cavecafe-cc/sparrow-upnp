@@ -54,7 +54,7 @@ jobs:
       - name: Publish to nuget.org
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: dotnet nuget push ./nupkg/*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./nupkg/*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
 
       - name: Create new tag
         env:
@@ -65,13 +65,3 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git tag $NEW_TAG
           git push origin $NEW_TAG
-        
-      #- name: Create Release
-      #  uses: softprops/action-gh-release@v1
-      #  with:
-      #    files: ./nupkg/*.nupkg
-      #    token: ${{ secrets.GITHUB_TOKEN }}
-      #    release_name: ${{ steps.calc_version.outputs.new_version }}
-      #    body: |
-      #      Release ${{ steps.calc_version.outputs.new_version }}
-      #      - [Changelog]("")
