@@ -40,8 +40,8 @@ jobs:
       - name: Update .csproj version
         run: |
           VERSION=${{ steps.calc_version.outputs.new_version }}
-          echo "Updating .csproj with version $VERSION"
-          sed -i 's/<Version>.*<\/Version>/<Version>'$VERSION'<\/Version>/g' **/*.csproj
+          echo "Updating .csproj files with version $VERSION"
+          find . -name "*.csproj" -exec sed -i 's/<Version>.*<\/Version>/<Version>'$VERSION'<\/Version>/g' {} +
 
       - name: Restore dependencies
         run: dotnet restore
