@@ -18,12 +18,21 @@ jobs:
         with:
           dotnet-version: '8'
 
+      - name: List Git tags for debugging
+        run: git tag
+
       - name: Get latest tag
-        id: get_version_tag
+        id: get_tag
         run: |
-          VERSION_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "current version tag: $VERSION_TAG"
-          VERSION=${VERSION_TAG#v} # Remove the 'v' prefix if exists
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "tag=$TAG" >> $GITHUB_ENV
+
+      - name: Calculate new version
+        id: calc_version
+        run: |
+          TAG=${{ env.tag }}
+          echo "Latest Tag: $TAG"
+          VERSION=${TAG#v} # Remove the 'v' prefix if exists
           IFS='.' read -r -a PARTS <<< "$VERSION"
           MAJOR=${PARTS[0]}
           MINOR=${PARTS[1]}
@@ -31,18 +40,13 @@ jobs:
           PATCH=$((PATCH + 1))
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
           echo "new_version=$NEW_VERSION" >> $GITHUB_ENV
-          echo "new version: $NEW_VERSION"
+          echo "New Version: $NEW_VERSION"
 
       - name: Restore dependencies
         run: dotnet restore
 
       - name: Build the project
-        env:
-          new_version: ${{ steps.get_version_tag.outputs.new_version }}
-
-        run: |
-          echo "new version: ${{ env.new_version }}"
-          dotnet build --configuration Release --no-restore /p:Version=${{ env.new_version }}
+        run: dotnet build --configuration Release --no-restore /p:Version=${{ env.new_version }}
 
       - name: Run tests
         run: dotnet test --no-restore --verbosity normal
@@ -59,8 +63,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          NEW_VERSION_TAG="v${{ env.new_version }}"
+          NEW_TAG="v${{ env.new_version }}"
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git tag $NEW_VERSION_TAG
-          git push origin $NEW_VERSION_TAG
+          git tag $NEW_TAG
+          git push origin $NEW_TAG
