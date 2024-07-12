@@ -30,7 +30,7 @@ public class UPnPChecker(UPnPConfiguration upnp) {
    }
 
    public bool CheckPortsOpened(string domain, IEnumerable<int> ports) {
-      return ports.All(port => IsPortOpen(domain, port, TimeSpan.FromSeconds(4)));
+      return ports.All(port => IsPortOpen(domain, port, TimeSpan.FromSeconds(5)));
    }
 
    public async Task<bool> OpenPortAsync(string[] msg, int waitSeconds, CancellationToken cancel) {
