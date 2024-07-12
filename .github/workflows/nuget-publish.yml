@@ -22,7 +22,6 @@ jobs:
 
       - name: List Git tags for debugging
         run: git tag
-
       - name: Get latest tag
         id: get_tag
         run: |
