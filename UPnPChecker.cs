@@ -31,7 +31,6 @@ public class UPnPChecker(UPnPConfiguration upnp) {
 
    public List<bool> CheckPortsOpened(string domain, List<int> ports, int waitSeconds = 5) {
       List<bool> results = new(ports.Count);
-      Console.WriteLine($"checking '{domain}' is reachable outside ...");
       results.AddRange(ports.Select(port => {
          var open = IsPortOpen(domain, port, TimeSpan.FromSeconds(waitSeconds));
          Console.WriteLine($"port {port} is {(open ? "open" : "not reachable")}");
