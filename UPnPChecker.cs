@@ -4,6 +4,9 @@ using SharpOpenNat;
 namespace Sparrow.UPnP;
 
 public class UPnPChecker(UPnPConfiguration upnp) {
+   
+   private readonly int HTTP_PROXY_PORT = 443;
+   
    private bool IsPortOpen(string host, int port, TimeSpan timeout) {
       try {
          using var client = new TcpClient();
@@ -28,19 +31,19 @@ public class UPnPChecker(UPnPConfiguration upnp) {
          return false;
       }
    }
-
-   public List<bool> CheckPortsOpened(string domain, List<int> ports, int waitSeconds = 5) {
-      List<bool> results = new(ports.Count);
-      results.AddRange(ports.Select(port => {
-         var open = IsPortOpen(domain, port, TimeSpan.FromSeconds(waitSeconds));
+   
+   public List<bool> CheckPortsOpened(string domain, bool withHttpProxy, List<int> externalPorts, int waitSeconds = 5) {
+      List<bool> results = new(externalPorts.Count);
+      results.AddRange(externalPorts.Select(port => {
+         var open = IsPortOpen(domain, withHttpProxy ? HTTP_PROXY_PORT : port, TimeSpan.FromSeconds(waitSeconds));
          Console.WriteLine($"port {port} is {(open ? "open" : "not reachable")}");
          return open;
       }));
       return results;
    }
    
-   public List<bool> CheckPortsOpened(List<(string domain, int port)> dpList, int waitSeconds = 5) {
-      return dpList.Select(dp => IsPortOpen(dp.domain, dp.port, TimeSpan.FromSeconds(waitSeconds))).ToList();
+   public List<bool> CheckPortsOpened(List<(string domain, int externalPort)> dpList, bool withHttpProxy, int waitSeconds = 5) {
+      return dpList.Select(dp => IsPortOpen(dp.domain, withHttpProxy ? HTTP_PROXY_PORT : dp.externalPort, TimeSpan.FromSeconds(waitSeconds))).ToList();
    }
 
    public async Task<bool> OpenPortAsync(string[] msg, int waitSeconds, CancellationToken cancel) {
