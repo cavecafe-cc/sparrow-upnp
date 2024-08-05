@@ -40,13 +40,7 @@ public class UPnPChecker(UPnPConfiguration upnp) {
    }
    
    public List<bool> CheckPortsOpened(List<(string domain, int port)> dpList, int waitSeconds = 5) {
-      var results = new List<bool>();
-      foreach (var dp in dpList) {
-         var open = IsPortOpen(dp.domain, dp.port, TimeSpan.FromSeconds(waitSeconds));
-         results.Add(open);
-         Console.WriteLine($"port {dp.port} is {(open ? "open" : "not reachable")}");
-      }
-      return results;
+      return dpList.Select(dp => IsPortOpen(dp.domain, dp.port, TimeSpan.FromSeconds(waitSeconds))).ToList();
    }
 
    public async Task<bool> OpenPortAsync(string[] msg, int waitSeconds, CancellationToken cancel) {
