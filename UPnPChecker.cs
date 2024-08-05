@@ -29,14 +29,24 @@ public class UPnPChecker(UPnPConfiguration upnp) {
       }
    }
 
-   public List<bool> CheckPortsOpened(string domain, List<int> ports) {
+   public List<bool> CheckPortsOpened(string domain, List<int> ports, int waitSeconds = 5) {
       List<bool> results = new(ports.Count);
       Console.WriteLine($"checking '{domain}' is reachable outside ...");
       results.AddRange(ports.Select(port => {
-         var open = IsPortOpen(domain, port, TimeSpan.FromSeconds(5));
+         var open = IsPortOpen(domain, port, TimeSpan.FromSeconds(waitSeconds));
          Console.WriteLine($"port {port} is {(open ? "open" : "not reachable")}");
          return open;
       }));
+      return results;
+   }
+   
+   public List<bool> CheckPortsOpened(List<(string domain, int port)> dpList, int waitSeconds = 5) {
+      var results = new List<bool>();
+      foreach (var dp in dpList) {
+         var open = IsPortOpen(dp.domain, dp.port, TimeSpan.FromSeconds(waitSeconds));
+         results.Add(open);
+         Console.WriteLine($"port {dp.port} is {(open ? "open" : "not reachable")}");
+      }
       return results;
    }
 
