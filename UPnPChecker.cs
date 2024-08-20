@@ -6,7 +6,7 @@ namespace Sparrow.UPnP;
 public class UPnPChecker(UPnPConfiguration upnp) {
 
    private const string tag = nameof(UPnPChecker);
-   private const int HTTP_PROXY_PORT = 443;
+   public const int HTTP_PROXY_PORT = 443;
    
    private bool IsPortOpen(string host, int port, TimeSpan timeout) {
       try {
