@@ -4,8 +4,9 @@ using SharpOpenNat;
 namespace Sparrow.UPnP;
 
 public class UPnPChecker(UPnPConfiguration upnp) {
-   
-   public const int HTTP_PROXY_PORT = 443;
+
+   private const string tag = nameof(UPnPChecker);
+   private const int HTTP_PROXY_PORT = 443;
    
    private bool IsPortOpen(string host, int port, TimeSpan timeout) {
       try {
@@ -20,14 +21,14 @@ public class UPnPChecker(UPnPConfiguration upnp) {
             client.EndConnect(result);
          }
          catch (SocketException se) {
-            Console.Error.WriteLine($"failed to close port {port}, err={se.Message}");
+            Log.Catch(tag, $"IsPortOpen (failed to close port {port})", se);
             // ignored
          }
 
          return true;
       }
       catch (Exception e) {
-         Console.Error.WriteLine($"failed to check port {port}, err={e.Message}");
+         Log.Catch(tag, $"IsPortOpen (failed to check port {port} open", e);
          return false;
       }
    }
@@ -36,14 +37,17 @@ public class UPnPChecker(UPnPConfiguration upnp) {
       List<bool> results = new(externalPorts.Count);
       results.AddRange(externalPorts.Select(port => {
          var open = IsPortOpen(domain, withHttpProxy ? HTTP_PROXY_PORT : port, TimeSpan.FromSeconds(waitSeconds));
-         Console.WriteLine($"port {port} is {(open ? "open" : "not reachable")}");
+         Log.Info(tag,$"port {port} is {(open ? "open" : "not reachable")}" );
          return open;
       }));
       return results;
    }
    
    public List<bool> CheckPortsOpened(List<(string domain, int externalPort)> dpList, bool withHttpProxy, int waitSeconds = 5) {
-      return dpList.Select(dp => IsPortOpen(dp.domain, withHttpProxy ? HTTP_PROXY_PORT : dp.externalPort, TimeSpan.FromSeconds(waitSeconds))).ToList();
+      return dpList.Select(dp =>
+         IsPortOpen(dp.domain, withHttpProxy ?
+            HTTP_PROXY_PORT :
+            dp.externalPort, TimeSpan.FromSeconds(waitSeconds))).ToList();
    }
 
    public async Task<bool> OpenPortAsync(string[] msg, int waitSeconds, CancellationToken cancel) {
@@ -52,7 +56,10 @@ public class UPnPChecker(UPnPConfiguration upnp) {
       var result = false;
       var openPorts = Task.Run(async () => {
          try {
+            var backgroundColor = Console.BackgroundColor;
+            Console.BackgroundColor = ConsoleColor.DarkYellow;
             Console.WriteLine(string.Join("\n\t", msg));
+            Console.BackgroundColor = backgroundColor;
             Console.ReadKey(true);
 
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(waitSeconds));
