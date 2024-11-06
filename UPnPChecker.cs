@@ -8,7 +8,7 @@ public class UPnPChecker(UPnPConfiguration upnp) {
    private const string tag = nameof(UPnPChecker);
    public const int HTTP_PROXY_PORT = 443;
    
-   private bool IsPortOpen(string host, int port, TimeSpan timeout) {
+   private static bool IsPortOpen(string host, int port, TimeSpan timeout) {
       try {
          using var client = new TcpClient();
          var result = client.BeginConnect(host, port, null, null);

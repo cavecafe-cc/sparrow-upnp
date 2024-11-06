@@ -1,8 +1,29 @@
-﻿namespace Sparrow.UPnP;
+﻿using Microsoft.Extensions.Configuration;
+
+namespace Sparrow.UPnP;
 
 public class UPnPConfiguration {
-   public bool Enabled { get; set; }
-   public PortMap[]? PortMap { get; set; }
+
+   public const string JSON = "upnp.json";
+   private const string tag = nameof(UPnPConfiguration);
+
+   public UPnPConfiguration(string configPath = "") {
+      if (string.IsNullOrWhiteSpace(configPath)) {
+         configPath = JSON;
+      }
+      if (!Path.IsPathRooted(configPath)) {
+         configPath = Path.Combine(Directory.GetCurrentDirectory(), configPath);
+      }
+      var builder = new ConfigurationBuilder()
+         .AddJsonFile(configPath, optional: false, reloadOnChange: true);
+
+      var config = builder.Build();
+      Enabled = config.GetValue<bool>(nameof(Enabled));
+      Log.Info(tag, "ctor", $"Enabled: {Enabled}");
+   }
+
+   public bool Enabled { get; init; } = false;
+   public PortMap[]? PortMap { get; set; } = Array.Empty<PortMap>();
 
    public bool IsUpnpEnabled() {
       return this is { Enabled: true, PortMap.Length: > 0 };

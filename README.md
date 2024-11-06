@@ -1,6 +1,6 @@
 # sparrow-upnp
 
-Universal Plugin and Play support
+UPnP (Universal Plugin and Play) support library for .NET Core
 
 * Sparrow.UPnP is a simple UPnP library for .NET Core. 
 * It can be used in any .NET Core-based service. 
