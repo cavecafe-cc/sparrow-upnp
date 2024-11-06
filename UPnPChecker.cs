@@ -1,14 +1,14 @@
 using System.Net.Sockets;
 using SharpOpenNat;
+using Microsoft.Extensions.Logging;
 
 namespace Sparrow.UPnP;
 
-public class UPnPChecker(UPnPConfiguration upnp) {
-
-   private const string tag = nameof(UPnPChecker);
+public class UPnPChecker(UPnPConfiguration upnp, ILogger<UPnPChecker> logger) {
    public const int HTTP_PROXY_PORT = 443;
+   private readonly ILogger<UPnPChecker> log = logger;
    
-   private static bool IsPortOpen(string host, int port, TimeSpan timeout) {
+   private bool IsPortOpen(string host, int port, TimeSpan timeout) {
       try {
          using var client = new TcpClient();
          var result = client.BeginConnect(host, port, null, null);
@@ -21,14 +21,14 @@ public class UPnPChecker(UPnPConfiguration upnp) {
             client.EndConnect(result);
          }
          catch (SocketException se) {
-            Log.Catch(tag, $"IsPortOpen (failed to close port {port})", se);
+            log.LogWarning($"{nameof(IsPortOpen)} (failed to close port {port})", se);
             // ignored
          }
 
          return true;
       }
       catch (Exception e) {
-         Log.Catch(tag, $"IsPortOpen (failed to check port {port} open", e);
+         log.LogCritical($"{nameof(IsPortOpen)} (failed to check port {port} open", e);
          return false;
       }
    }
@@ -37,7 +37,7 @@ public class UPnPChecker(UPnPConfiguration upnp) {
       List<bool> results = new(externalPorts.Count);
       results.AddRange(externalPorts.Select(port => {
          var open = IsPortOpen(domain, withHttpProxy ? HTTP_PROXY_PORT : port, TimeSpan.FromSeconds(waitSeconds));
-         Log.Info(tag,$"port {port} is {(open ? "open" : "not reachable")}" );
+         log.LogInformation($"port {port} is {(open ? "open" : "not reachable")}");
          return open;
       }));
       return results;
@@ -90,7 +90,7 @@ public class UPnPChecker(UPnPConfiguration upnp) {
          return true;
       }
       catch (Exception e) {
-         await Console.Error.WriteLineAsync($"failed to open ports using UPnP, err={e.Message}");
+         log.LogError(e, $"failed to open ports using UPnP, err={e.Message}");
          return false;
       }
    }

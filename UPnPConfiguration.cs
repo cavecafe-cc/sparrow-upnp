@@ -1,13 +1,13 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Sparrow.UPnP;
 
 public class UPnPConfiguration {
 
    public const string JSON = "upnp.json";
-   private const string tag = nameof(UPnPConfiguration);
 
-   public UPnPConfiguration(string configPath = "") {
+   public UPnPConfiguration(ILogger<UPnPConfiguration> log, string configPath = "") {
       if (string.IsNullOrWhiteSpace(configPath)) {
          configPath = JSON;
       }
@@ -19,7 +19,8 @@ public class UPnPConfiguration {
 
       var config = builder.Build();
       Enabled = config.GetValue<bool>(nameof(Enabled));
-      Log.Info(tag, "ctor", $"Enabled: {Enabled}");
+      log.LogInformation($"Enabled: {Enabled}");
+
    }
 
    public bool Enabled { get; init; } = false;

@@ -20,8 +20,7 @@ public abstract class Const {
 
    private class MaskingJsonConverter<T> : JsonConverter<T>
    {
-      public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-      {
+      public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
          return JsonSerializer.Deserialize<T>(ref reader, options);
       }
 
@@ -29,28 +28,16 @@ public abstract class Const {
          return keywords.Any(keyword => propName.EndsWith(keyword, StringComparison.OrdinalIgnoreCase));
       }
 
-      public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
-      {
+      public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options) {
          writer.WriteStartObject();
-         foreach (var property in typeof(T).GetProperties())
-         {
+         foreach (var property in typeof(T).GetProperties()) {
             var propName = property.Name;
             var propValue = property.GetValue(value)?.ToString();
 
-            if (property.PropertyType == typeof(string) &&
-                !string.IsNullOrWhiteSpace(propValue) &&
-                IsEndWithAny(propName, "Token", "Secret", "Password", "Pwd"))
-            {
-               writer.WriteString(propName, Log.Mask(propValue));
-            }
-            else
-            {
-               writer.WritePropertyName(propName);
-               JsonSerializer.Serialize(writer, property.GetValue(value), options);
-            }
+            writer.WritePropertyName(propName);
+            JsonSerializer.Serialize(writer, propValue, options);
          }
          writer.WriteEndObject();
       }
    }
-
 }
